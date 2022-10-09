@@ -3,3 +3,6 @@ datetime
 pandas
 tqdm
 numpy
+click
+matplotlib
+seaborn
