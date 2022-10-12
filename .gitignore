@@ -3,7 +3,7 @@ venv
 .vscode
 
 data
-processed_data
+
 processed_data copy
 
 .DS_Store

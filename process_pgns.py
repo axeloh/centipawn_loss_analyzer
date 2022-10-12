@@ -7,8 +7,9 @@ import time
 import multiprocessing as mp
 import logging 
 import pandas as pd
+import os
 
-from helpers import read_games, parse_elo_rating, evaluate_position, save_to_npy
+from helpers import read_games, parse_elo_rating, evaluate_position
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +19,9 @@ logging.basicConfig(
         logging.StreamHandler()
     ])
 
-STOCKFISH_PATH = '/usr/local/Cellar/stockfish/15/bin/stockfish'
+# Download from here: https://stockfishchess.org/download/
+# STOCKFISH_PATH = '/usr/local/Cellar/stockfish/15/bin/stockfish' # Mac 
+STOCKFISH_PATH = '../stockfish/stockfish_15_x64_avx2.exe' # Windows
 ENGINE = chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH)
 MOVETIMESEC = 999
 DEPTH = 15
@@ -26,6 +29,7 @@ LIMIT = chess.engine.Limit(time=MOVETIMESEC, depth=DEPTH)
 
 DATA_PATH = 'data' 
 OUTPUT_PATH = 'processed_data'
+os.makedirs(OUTPUT_PATH, exist_ok=True)
 
 INCLUDE_PLAYERS = [
     'Anand', 
@@ -46,7 +50,7 @@ INCLUDE_PLAYERS = [
     # 'Keymer', max 575
 ]
 
-MAX_NUM_GAMES_PER_PLAYER = 1200
+MAX_NUM_GAMES_PER_PLAYER = 1500
 
 
 def process_player_games(player_name: str) -> None:
@@ -62,7 +66,7 @@ def process_player_games(player_name: str) -> None:
 
     for i, game in enumerate(games, start=1):
         # Because first n games already processed
-        if i <= 800:
+        if i <= 1325:
             continue 
 
         if i > MAX_NUM_GAMES_PER_PLAYER:
@@ -157,13 +161,12 @@ def save_as_pickle(path: str, df_: pd.DataFrame, append=True):
 
     df.to_pickle(path)
 
-
 if __name__ == '__main__':
     logging.info('Starting processing pgns.. ')
     start_time = time.time()
 
     # Parallelize 
-    with mp.Pool(mp.cpu_count()) as pool:
+    with mp.Pool(processes=5) as pool:# mp.Pool(processes=min(len(INCLUDE_PLAYERS), mp.cpu_count())) as pool:
         pool.map(process_player_games, INCLUDE_PLAYERS)
 
     end_time = time.time()
