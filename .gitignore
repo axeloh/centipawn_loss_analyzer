@@ -1,8 +1,12 @@
 .venv
 venv
+.vscode
+
 data
 processed_data
-.vscode
+processed_data copy
+
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4,6 +4,7 @@ import chess.pgn
 from typing import Callable, Union, List
 from datetime import datetime
 import time
+import numpy as np
 from functools import wraps
 
 def evaluate_position(board: chess.Board , engine: chess.engine.SimpleEngine, limit: chess.engine.Limit):
@@ -39,9 +40,7 @@ def read_games(pgn_path: str) -> List[chess.pgn.Game]:
     return games
 
 def is_classical(event: str):
-    return 'blitz' not in event.lower() and 'rapid' not in event.lower()
-
-
+    return 'blitz' not in event.lower() and 'rapid' not in event.lower() and 'speed' not in event.lower() and ' sim' not in event.lower()
 
 def timing(func: Callable):
     """Decorator to time any function."""
@@ -53,3 +52,30 @@ def timing(func: Callable):
         print(f'{func.__name__} done in {(te-ts):.3f}s.')
         return result
     return wrap
+
+def save_to_npy(path: str, data: List[dict], append=True):
+    """Saves list of dicts to file as .npy file (pickled).
+    
+    If already exists, and append=True, it will append.
+    Otherwise, replace the already existing, or create new.
+    """
+
+    write_data = []
+    if append:
+        try:
+            existing_output = np.load(path, allow_pickle=True).tolist()
+            for i, el in enumerate(existing_output):
+                existing_output[i]['white_cp_losses'] = tuple(existing_output[i]['white_cp_losses'].tolist())
+                existing_output[i]['black_cp_losses'] = tuple(existing_output[i]['black_cp_losses'].tolist())
+        except FileNotFoundError:
+            pass
+        else:
+            write_data.extend(existing_output)
+    
+    write_data.extend(data)
+
+    # Remove any duplicates
+    # Somewhat hacky solution, as we are dealing with a list of dicts
+    write_data = [dict(t) for t in {tuple(d.items()) for d in write_data}]
+
+    np.save(path, write_data)

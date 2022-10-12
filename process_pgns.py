@@ -1,3 +1,4 @@
+from typing import List
 import chess
 import chess.engine
 import chess.pgn
@@ -5,8 +6,9 @@ import numpy as np
 import time
 import multiprocessing as mp
 import logging 
+import pandas as pd
 
-from helpers import read_games, parse_elo_rating, evaluate_position
+from helpers import read_games, parse_elo_rating, evaluate_position, save_to_npy
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,17 +39,15 @@ INCLUDE_PLAYERS = [
     'Nepo', 
     'Jobava', 
     'Firouzja', 
-    'Niemann',
-    'Pragg',
-    'Gukesh',
-    'Erigaisi',
-    'Keymer',
-    'Sarin'
-    ]
+    # 'Sarin', # max 702
+    # 'Niemann', # max 560
+    # 'Pragg', # max 544
+    # 'Gukesh', # max 625 games
+    # 'Keymer', max 575
+]
 
-MAX_NUM_GAMES_PER_PLAYER = 500
+MAX_NUM_GAMES_PER_PLAYER = 1200
 
-# evaluator = Evaluator(ENGINE, LIMIT)
 
 def process_player_games(player_name: str) -> None:
     logging.info(f'-- Processing games for player: {player_name}')
@@ -61,12 +61,16 @@ def process_player_games(player_name: str) -> None:
         return 
 
     for i, game in enumerate(games, start=1):
+        # Because first n games already processed
+        if i <= 800:
+            continue 
+
         if i > MAX_NUM_GAMES_PER_PLAYER:
             break
         
         # Save every now and then
-        if i % (min(MAX_NUM_GAMES_PER_PLAYER, len(games)) // 5) == 0:
-            np.save(f'{OUTPUT_PATH}/{player_name}.npy', output)
+        if i % 25 == 0:
+            save_as_pickle(f'{OUTPUT_PATH}/{player_name}.pkl', pd.DataFrame(output), append=True)
             logging.info(f'[{player_name}] Saved after {i} games.')
 
         try: 
@@ -125,9 +129,33 @@ def process_player_games(player_name: str) -> None:
     if len(output) == 0:
         logging.warning(f'[{player_name}] No relevant games.')
         return 
-
-    np.save(f'{OUTPUT_PATH}/{player_name}.npy', output)
+    
+    save_as_pickle(f'{OUTPUT_PATH}/{player_name}.pkl', pd.DataFrame(output), append=True)
     logging.info(f'--Done for player: {player_name}')
+
+
+def save_as_pickle(path: str, df_: pd.DataFrame, append=True):
+    """Saves dataframe as csv to `path`.
+    
+    If already exists, and append=True, it will append.
+    Otherwise, replace the already existing, or create new.
+    """
+    df = df_.copy()
+    if append:
+        try:
+            existing_df = pd.read_pickle(path)
+        except FileNotFoundError:
+            pass
+        else:
+            df = pd.concat([existing_df, df]).reset_index(drop=True)
+
+    # Remove any duplicates
+    dup_cols = df.columns.to_list()
+    dup_cols.remove('white_cp_losses')
+    dup_cols.remove('black_cp_losses')
+    df = df.drop_duplicates(subset=dup_cols)
+
+    df.to_pickle(path)
 
 
 if __name__ == '__main__':
