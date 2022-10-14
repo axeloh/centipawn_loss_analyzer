@@ -9,19 +9,13 @@ import logging
 import pandas as pd
 import os
 
-from helpers import read_games, parse_elo_rating, evaluate_position
+from helpers import read_games, parse_elo_rating, evaluate_position, setup_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(message)s',
-    handlers=[
-        logging.FileHandler("logs/debug.log"),
-        logging.StreamHandler()
-    ])
+setup_logger()
 
 # Download from here: https://stockfishchess.org/download/
-# STOCKFISH_PATH = '/usr/local/Cellar/stockfish/15/bin/stockfish' # Mac 
-STOCKFISH_PATH = '../stockfish/stockfish_15_x64_avx2.exe' # Windows
+STOCKFISH_PATH = '/usr/local/Cellar/stockfish/15/bin/stockfish' # Mac 
+# STOCKFISH_PATH = '../stockfish/stockfish_15_x64_avx2.exe' # Windows
 ENGINE = chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH)
 MOVETIMESEC = 999
 DEPTH = 15
@@ -43,14 +37,14 @@ INCLUDE_PLAYERS = [
     'Nepo', 
     'Jobava', 
     'Firouzja', 
-    # 'Sarin', # max 702
-    # 'Niemann', # max 560
-    # 'Pragg', # max 544
-    # 'Gukesh', # max 625 games
-    # 'Keymer', max 575
+    'Sarin', # max 702
+    'Niemann', # max 560
+    'Pragg', # max 544
+    'Gukesh', # max 625 games
+    'Keymer', # max 575
 ]
 
-MAX_NUM_GAMES_PER_PLAYER = 1500
+MAX_NUM_GAMES_PER_PLAYER = 705
 
 
 def process_player_games(player_name: str) -> None:
@@ -66,8 +60,8 @@ def process_player_games(player_name: str) -> None:
 
     for i, game in enumerate(games, start=1):
         # Because first n games already processed
-        if i <= 1325:
-            continue 
+        # if i <= 1000:
+        #     continue 
 
         if i > MAX_NUM_GAMES_PER_PLAYER:
             break
@@ -80,6 +74,8 @@ def process_player_games(player_name: str) -> None:
         try: 
             logging.info(f'[{player_name}] Game: {i}/{len(games)}')
             event = game.headers['Event']
+            site = game.headers['Site']
+            round = game.headers['Round']
             date = game.headers['Date']
             white_player = game.headers['White']
             black_player = game.headers['Black']
@@ -91,13 +87,11 @@ def process_player_games(player_name: str) -> None:
                 continue
 
             board = game.board()
-            # init_evaluation = evaluator.evaluate(board.fen())
             init_evaluation = evaluate_position(board, ENGINE, LIMIT)
             evaluations = [init_evaluation]
             moves = game.mainline_moves()
             for move in moves:
                 board.push(move)
-                # position_evaluation = evaluator.evaluate(board.fen()) 
                 position_evaluation = evaluate_position(board, ENGINE, LIMIT)
                 evaluations.append(position_evaluation)
 
@@ -115,7 +109,9 @@ def process_player_games(player_name: str) -> None:
 
             game_output = {
                 'event': event,
+                'site': site,
                 'date': date,
+                'round': round,
                 'white_player': white_player,
                 'black_player': black_player,
                 'white_elo': white_elo,
@@ -157,8 +153,10 @@ def save_as_pickle(path: str, df_: pd.DataFrame, append=True):
     dup_cols = df.columns.to_list()
     dup_cols.remove('white_cp_losses')
     dup_cols.remove('black_cp_losses')
+    pre_len = len(df)
     df = df.drop_duplicates(subset=dup_cols)
-
+    post_len = len(df)
+    logging.info(f'Num duplicates: {pre_len - post_len}')
     df.to_pickle(path)
 
 if __name__ == '__main__':
@@ -166,7 +164,7 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # Parallelize 
-    with mp.Pool(processes=5) as pool:# mp.Pool(processes=min(len(INCLUDE_PLAYERS), mp.cpu_count())) as pool:
+    with mp.Pool(processes=min(len(INCLUDE_PLAYERS), mp.cpu_count())) as pool:
         pool.map(process_player_games, INCLUDE_PLAYERS)
 
     end_time = time.time()

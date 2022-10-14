@@ -1,8 +1,12 @@
 import pandas as pd
 import numpy as np
 import os
-from helpers import is_classical, timing
+import logging
 import click 
+
+from helpers import is_relevant_game, timing, setup_logger
+
+setup_logger()
 
 INPUT_PATH = './processed_data'
 OUTPUT_PATH = './games_with_cp_metrics.csv'
@@ -32,10 +36,14 @@ def create_centipawn_df(input_path, min_elo, num_opening_moves, min_remaining_mo
     for filename in os.listdir(input_path):
         data = pd.read_pickle(f'{input_path}/{filename}').to_dict('records')
         for game in data:
-            event = game['event']
-            if not is_classical(event):
+            if not is_relevant_game(game):
                 continue
+            
+            event = game['event']
+            site = game['site']
+            round = game['round']
             date = game['date']
+            
             white_player = game['white_player']
             white_elo = game['white_elo']
             black_player = game['black_player']
@@ -47,6 +55,8 @@ def create_centipawn_df(input_path, min_elo, num_opening_moves, min_remaining_mo
                 # Filter out opening moves
                 metrics = {}
                 metrics['event'] = event
+                metrics['site'] = site
+                metrics['round'] = round
                 metrics['date'] = date
                 metrics['player'] = white_player
                 metrics['elo'] = white_elo
@@ -61,6 +71,8 @@ def create_centipawn_df(input_path, min_elo, num_opening_moves, min_remaining_mo
             if black_elo is not None and black_elo > min_elo and len(black_cp_losses) >= min_remaining_moves:
                 metrics = {}
                 metrics['event'] = event
+                metrics['site'] = site
+                metrics['round'] = round
                 metrics['date'] = date
                 metrics['player'] = black_player
                 metrics['elo'] = black_elo
@@ -73,10 +85,15 @@ def create_centipawn_df(input_path, min_elo, num_opening_moves, min_remaining_mo
                 centipawn_metrics.append(metrics)
                 
     df = pd.DataFrame(centipawn_metrics)
-    pre_drop_size = len(df)
-    df.drop_duplicates(subset=['event', 'date', 'player', 'elo', 'color', 'opponent', 'result', 'avg_cp_loss'], inplace=True)
-    post_drop_size = len(df)
-    print(f'num duplicated rows dropped: {(pre_drop_size - post_drop_size)}')
+    # Remove any duplicates
+    dup_cols = df.columns.to_list()
+    dup_cols.remove('avg_cp_loss')
+    dup_cols.remove('std_cp_loss')
+    pre_len = len(df)
+    df = df.drop_duplicates(subset=dup_cols)
+    post_len = len(df)
+    logging.info(f'Num duplicates: {pre_len - post_len}')
+
     df.to_csv(output_path, index=False)
         
 

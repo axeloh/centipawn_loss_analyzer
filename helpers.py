@@ -6,6 +6,16 @@ from datetime import datetime
 import time
 import numpy as np
 from functools import wraps
+import logging
+
+def setup_logger():
+    logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(levelname)s | %(message)s',
+    handlers=[
+        logging.FileHandler("logs/debug.log"),
+        logging.StreamHandler()
+    ])
 
 def evaluate_position(board: chess.Board , engine: chess.engine.SimpleEngine, limit: chess.engine.Limit):
    info = engine.analyse(board, limit)
@@ -39,8 +49,19 @@ def read_games(pgn_path: str) -> List[chess.pgn.Game]:
             games.append(game)
     return games
 
-def is_classical(event: str):
-    return 'blitz' not in event.lower() and 'rapid' not in event.lower() and 'speed' not in event.lower() and ' sim' not in event.lower()
+def is_relevant_game(game: dict):
+    event = game['event']
+    site = game['event']
+    return 'blitz' not in event.lower() \
+        and 'rapid' not in event.lower() \
+        and 'speed' not in event.lower() \
+        and ' sim' not in event.lower() \
+        and 'bullet' not in event.lower() \
+        and 'blindfold' not in event.lower() \
+        and '.com' not in site.lower() \
+        and '.org' not in site.lower() \
+        and '.net' not in site.lower()
+        
 
 def timing(func: Callable):
     """Decorator to time any function."""
@@ -49,7 +70,7 @@ def timing(func: Callable):
         ts = time.time()
         result = func(*args, **kw)
         te = time.time()
-        print(f'{func.__name__} done in {(te-ts):.3f}s.')
+        logging.info(f'{func.__name__} done in {(te-ts):.3f}s.')
         return result
     return wrap
 
