@@ -51,7 +51,7 @@ def read_games(pgn_path: str) -> List[chess.pgn.Game]:
 
 def is_relevant_game(game: dict):
     event = game['event']
-    site = game['event']
+    site = game['site']
     return 'blitz' not in event.lower() \
         and 'rapid' not in event.lower() \
         and 'speed' not in event.lower() \
