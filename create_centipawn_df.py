@@ -94,6 +94,8 @@ def create_centipawn_df(input_path, min_elo, num_opening_moves, min_remaining_mo
     post_len = len(df)
     logging.info(f'Num duplicates: {pre_len - post_len}')
 
+    # Remove obvious outliers 
+    df = df[df['avg_cp_loss'] <= 100]
     df.to_csv(output_path, index=False)
         
 

@@ -26,26 +26,34 @@ OUTPUT_PATH = 'processed_data'
 os.makedirs(OUTPUT_PATH, exist_ok=True)
 
 INCLUDE_PLAYERS = [
-    'Anand', 
-    'Aronian', 
-    'Carlsen', 
-    'Caruana', 
-    'Ding', 
-    'Duda', 
-    'So', 
-    'PolgarJ', 
-    'Nepo', 
-    'Jobava', 
-    'Firouzja', 
-    'Sarin', # max 702
-    'Niemann', # max 560
-    'Pragg', # max 544
-    'Gukesh', # max 625 games
-    'Keymer', # max 575
+    # 'Anand', 
+    # 'Aronian', 
+    # 'Carlsen', 
+    # 'Caruana', 
+    # 'Ding', 
+    # 'Duda', 
+    # 'So', 
+    # 'PolgarJ', 
+    # 'Nepo', 
+    # 'Jobava', 
+    # 'Firouzja', 
+    # 'Sarin',
+    # 'Niemann',
+    # 'Pragg',
+    # 'Gukesh',
+    # 'Keymer',
+    # 'Abdusattorov',
+    # 'Artemiev',
+    # 'Erigaisi',
+    # 'Giri',
+    # 'Grischuk',
+    # 'Karjakin',
+    # 'Nakamura',
+    # 'Rapport',
+    # 'VachierLagrave',
 ]
 
-MAX_NUM_GAMES_PER_PLAYER = 705
-
+MAX_NUM_GAMES_PER_PLAYER = 2000
 
 def process_player_games(player_name: str) -> None:
     logging.info(f'-- Processing games for player: {player_name}')
@@ -59,15 +67,16 @@ def process_player_games(player_name: str) -> None:
         return 
 
     for i, game in enumerate(games, start=1):
-        # Because first n games already processed
-        # if i <= 1000:
-        #     continue 
+        # If first n games already processed
+        n = 0
+        if i <= n:
+            continue 
 
         if i > MAX_NUM_GAMES_PER_PLAYER:
             break
         
         # Save every now and then
-        if i % 25 == 0:
+        if i % 50 == 0:
             save_as_pickle(f'{OUTPUT_PATH}/{player_name}.pkl', pd.DataFrame(output), append=True)
             logging.info(f'[{player_name}] Saved after {i} games.')
 

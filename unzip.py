@@ -13,7 +13,8 @@ def unzip(path: str, delete_zip: bool = False):
     if delete_zip:
         os.remove(path) 
 
-for file in tqdm(os.listdir(DATA_FOLDER)):
-    if not file.endswith('.zip'):
-        continue
-    unzip(f'{DATA_FOLDER}/{file}', delete_zip=True)
+if __name__ == '__main__':
+    for file in tqdm(os.listdir(DATA_FOLDER)):
+        if not file.endswith('.zip'):
+            continue
+        unzip(f'{DATA_FOLDER}/{file}', delete_zip=True)
