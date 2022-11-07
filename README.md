@@ -1,6 +1,9 @@
 # Centipawn Loss Analyzer 
-Jumping on the chess-cheating-scandal bandwagon and analyzing the ACPL (Average CentiPawn Loss) over time for a selected set of 25+ GMs.
-Games were analyzed using Stockfish 15, depth 15. 
+Jumping on the chess-cheating-scandal bandwagon and analyzing the ACPL (Average CentiPawn Loss) over time for a selected set of 25+ GMs.  
+  - Games were filtered to only include OTB classical games (no online games, no bullet, blitz or rapid)
+  - Opening moves (first 10) were filtered out
+  - Short games (less than 10 moves after the opening moves) were filtered out
+  - Games were analyzed using Stockfish 15 with depth 15
 
 **TLDR;** 
   - Nothing suspicious found with regards to Niemann's ELO vs ACPL.
