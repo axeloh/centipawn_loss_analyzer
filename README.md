@@ -25,7 +25,7 @@ Here follows numerous plots of the findings...
 ![](plots/elo_vs_acpl_total_trend.png)
 
 ---
-#### ACPL distribution per player 
+#### ACPL distribution per player (boxplot)
 ![](plots/elo_vs_acpl_per_player.png)
 
 ---
@@ -68,7 +68,7 @@ As a player's rating is not distributed evenly, but rather in a stepwise manner,
 ![](plots/tier_elo_vs_acpl_so.png)
 
 ---
-#### Fraction of games sub x % 
+#### Fraction of games with ACPL sub x % 
 ![](plots/fraction_games_acpl_sub_30.png)
 ![](plots/fraction_games_acpl_sub_20.png)
 ![](plots/fraction_games_acpl_sub_15.png)
