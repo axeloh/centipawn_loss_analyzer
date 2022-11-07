@@ -1,5 +1,5 @@
 # Centipawn Loss Analyzer 
-Analyzing the ACPL (Average CentiPawn Loss) over time for a selected set of 25+ GMs.
+Jumping on the chess-cheating-scandal bandwagon and analyzing the ACPL (Average CentiPawn Loss) over time for a selected set of 25+ GMs.
 Games were analyzed using Stockfish 15, depth 15. 
 
 **TLDR;** 
