@@ -17,7 +17,7 @@ Here follows numerous plots of the findings...
 ![](plots/acpl_total_distribution.png)
 
 ---
-#### ACPL distribution per player
+#### ACPL distribution per player (boxplot)
 ![](plots/acpl_distribution_per_player.png)
 
 ---
@@ -25,7 +25,7 @@ Here follows numerous plots of the findings...
 ![](plots/elo_vs_acpl_total_trend.png)
 
 ---
-#### ACPL distribution per player (boxplot)
+#### ELO vs ACPL trend per player 
 ![](plots/elo_vs_acpl_per_player.png)
 
 ---
