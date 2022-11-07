@@ -1,6 +1,6 @@
 # Centipawn Loss Analyzer 
 Jumping on the chess-cheating-scandal bandwagon and analyzing the ACPL (Average CentiPawn Loss) over time for a selected set of 25+ GMs.  
-  - Games were filtered to only include OTB classical games (no online games, no bullet, blitz or rapid, no simuls or blindfolded games)
+  - Games were filtered to only include OTB classical games (no online games, no bullet, blitz or rapid, no simuls, no blindfolds)
   - Opening moves (first 10) were filtered out
   - Short games (less than 10 moves after the opening moves) were filtered out
   - Games were analyzed using Stockfish 15 with depth 15
